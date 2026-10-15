@@ -82,3 +82,20 @@ func TestAggregate_SparseFlag(t *testing.T) {
 		t.Fatal("unknown allocated must report 0")
 	}
 }
+
+func TestAggregate_TopFiles(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "small.txt"), 10)
+	writeFile(t, filepath.Join(root, "big.txt"), 300)
+	writeFile(t, filepath.Join(root, "mid.txt"), 100)
+	sum, err := Aggregate(root, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sum.TopFiles) != 3 {
+		t.Fatalf("top files = %d, want 3", len(sum.TopFiles))
+	}
+	if filepath.Base(sum.TopFiles[0].Path) != "big.txt" || sum.TopFiles[0].ApparentBytes != 300 {
+		t.Fatalf("top[0] = %+v, want big.txt", sum.TopFiles[0])
+	}
+}

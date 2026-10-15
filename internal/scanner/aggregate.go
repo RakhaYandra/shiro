@@ -1,9 +1,34 @@
 package scanner
 
 import (
+	"container/heap"
 	"path/filepath"
 	"sort"
 )
+
+// FileRef is one large-file record for ranking.
+type FileRef struct {
+	Path          string
+	ApparentBytes int64
+}
+
+// topHeap is a bounded min-heap of largest files.
+type topHeap []FileRef
+
+func (h topHeap) Len() int            { return len(h) }
+func (h topHeap) Less(i, j int) bool  { return h[i].ApparentBytes < h[j].ApparentBytes }
+func (h topHeap) Swap(i, j int)       { h[i], h[j] = h[j], h[i] }
+func (h *topHeap) Push(x interface{}) { *h = append(*h, x.(FileRef)) }
+func (h *topHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[:n-1]
+	return x
+}
+
+// maxTopFiles bounds ranking memory regardless of tree size.
+const maxTopFiles = 100
 
 // DirNode is one directory subtree with rolled-up sizes.
 type DirNode struct {
@@ -28,6 +53,7 @@ type Summary struct {
 	Errors         []ScanError
 	Partial        bool
 	Tree           *DirNode
+	TopFiles       []FileRef
 }
 
 // Aggregate walks root and rolls sizes bottom-up.
@@ -53,6 +79,18 @@ func Aggregate(root string, opts Options) (Summary, error) {
 		}
 		close(errDone)
 	}()
+	var tops topHeap
+	heap.Init(&tops)
+	pushTop := func(f FileRef) {
+		if tops.Len() < maxTopFiles {
+			heap.Push(&tops, f)
+			return
+		}
+		if f.ApparentBytes > tops[0].ApparentBytes {
+			heap.Pop(&tops)
+			heap.Push(&tops, f)
+		}
+	}
 	for e := range entries {
 		key := [2]uint64{e.DeviceID, e.Inode}
 		if e.Kind == KindFile && e.DeviceID+e.Inode != 0 {
@@ -69,6 +107,7 @@ func Aggregate(root string, opts Options) (Summary, error) {
 				sum.TotalAllocated += e.AllocatedBytes
 				sum.AllocatedKnown = true
 			}
+			pushTop(FileRef{Path: e.Path, ApparentBytes: e.ApparentBytes})
 			addToParents(nodes, abs, dirOf(e.Path, abs), e.ApparentBytes, e.AllocatedBytes, e.AllocatedKnown)
 		case KindDirectory:
 			sum.Dirs++
@@ -87,6 +126,10 @@ func Aggregate(root string, opts Options) (Summary, error) {
 	sum.Partial = len(errs) > 0
 	linkChildren(nodes, abs)
 	sum.Tree = nodes[abs]
+	sum.TopFiles = make([]FileRef, tops.Len())
+	for i := len(sum.TopFiles) - 1; i >= 0; i-- {
+		sum.TopFiles[i] = heap.Pop(&tops).(FileRef)
+	}
 	return sum, nil
 }
 
