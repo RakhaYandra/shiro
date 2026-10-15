@@ -82,3 +82,59 @@ func TestSQLite_FKEnforced_MultiConn(t *testing.T) {
 		}
 	}
 }
+
+func TestSQLite_FullTree(t *testing.T) {
+	db := filepath.Join(t.TempDir(), "shiro.db")
+	st, err := Open(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	sum := testSummary()
+	sum.Tree.Children = []*scanner.DirNode{
+		{Path: "/tmp/x/sub", Apparent: 20, Children: []*scanner.DirNode{
+			{Path: "/tmp/x/sub/leaf", Apparent: 10},
+		}},
+	}
+	id, err := st.SaveScan(sum, "v")
+	if err != nil {
+		t.Fatal(err)
+	}
+	n, err := st.EntryCount(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n != 3 {
+		t.Fatalf("entries = %d, want 3 (root+sub+leaf)", n)
+	}
+}
+
+func TestSQLite_ListAndGet(t *testing.T) {
+	db := filepath.Join(t.TempDir(), "shiro.db")
+	st, err := Open(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	id1, err := st.SaveScan(testSummary(), "v")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.SaveScan(testSummary(), "v"); err != nil {
+		t.Fatal(err)
+	}
+	scans, err := st.ListScans("/tmp/x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(scans) != 2 || scans[0].StartedAt < scans[1].StartedAt {
+		t.Fatalf("want 2 scans desc, got %+v", scans)
+	}
+	entries, err := st.GetEntries(id1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) == 0 {
+		t.Fatal("no entries returned")
+	}
+}

@@ -70,17 +70,20 @@ func (s *Store) SaveScan(sum scanner.Summary, scannerVersion string) (string, er
 		return err
 	}
 	if sum.Tree != nil {
-		var alloc *int64
-		if sum.AllocatedKnown {
-			alloc = &sum.TotalAllocated
-		}
-		if err := put(sum.Tree.Path, "directory", sum.TotalApparent, alloc); err != nil {
-			return "", err
-		}
-		for _, k := range sum.Tree.Children {
-			if err := put(k.Path, "directory", k.Apparent, nil); err != nil {
-				return "", err
+		var walk func(n *scanner.DirNode) error
+		walk = func(n *scanner.DirNode) error {
+			if err := put(n.Path, "directory", n.Apparent, nil); err != nil {
+				return err
 			}
+			for _, k := range n.Children {
+				if err := walk(k); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+		if err := walk(sum.Tree); err != nil {
+			return "", err
 		}
 	}
 	if err := tx.Commit(); err != nil {
@@ -93,6 +96,58 @@ func (s *Store) EntryCount(scanID string) (int, error) {
 	var n int
 	err := s.db.QueryRow(`SELECT COUNT(*) FROM entries WHERE scan_id = ?`, scanID).Scan(&n)
 	return n, err
+}
+
+type ScanMeta struct {
+	ID         string
+	StartedAt  int64
+	Status     string
+	TotalBytes int64
+}
+
+func (s *Store) ListScans(root string) ([]ScanMeta, error) {
+	rows, err := s.db.Query(
+		`SELECT s.id, s.started_at, s.status,
+			COALESCE((SELECT e.apparent_bytes FROM entries e
+				WHERE e.scan_id = s.id AND e.path = s.root_path), 0)
+		 FROM scans s WHERE s.root_path = ? ORDER BY s.started_at DESC, s.id DESC`, root)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []ScanMeta
+	for rows.Next() {
+		var m ScanMeta
+		if err := rows.Scan(&m.ID, &m.StartedAt, &m.Status, &m.TotalBytes); err != nil {
+			return nil, err
+		}
+		out = append(out, m)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) GetEntries(scanID string) (map[string]int64, error) {
+	rows, err := s.db.Query(`SELECT path, apparent_bytes FROM entries WHERE scan_id = ?`, scanID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]int64{}
+	for rows.Next() {
+		var path string
+		var b int64
+		if err := rows.Scan(&path, &b); err != nil {
+			return nil, err
+		}
+		out[path] = b
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) ScanRoot(scanID string) (string, error) {
+	var root string
+	err := s.db.QueryRow(`SELECT root_path FROM scans WHERE id = ?`, scanID).Scan(&root)
+	return root, err
 }
 
 func (s *Store) InsertEntryOrphan() error {
