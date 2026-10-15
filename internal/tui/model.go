@@ -7,6 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
+	"github.com/RakhaYandra/shiro/internal/cleanup"
 	"github.com/RakhaYandra/shiro/internal/detector"
 	"github.com/RakhaYandra/shiro/internal/output"
 	"github.com/RakhaYandra/shiro/internal/scanner"
@@ -77,6 +78,10 @@ func (m *Model) refresh() {
 	if m.cursor >= len(m.rows) {
 		m.cursor = max(len(m.rows)-1, 0)
 	}
+}
+
+func (m *Model) SetPlan(plan cleanup.CleanupPlan) {
+	m.plan = newPlanView(plan)
 }
 
 func (m Model) Selected() string {
