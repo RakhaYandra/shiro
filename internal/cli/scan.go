@@ -3,13 +3,29 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/RakhaYandra/shiro/internal/output"
 	"github.com/RakhaYandra/shiro/internal/scanner"
+	"github.com/RakhaYandra/shiro/internal/store/sqlite"
 )
+
+// defaultDBPath is ~/.local/share/shiro/shiro.db (XDG_DATA_HOME aware).
+func defaultDBPath() string {
+	base := os.Getenv("XDG_DATA_HOME")
+	if base == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return ""
+		}
+		base = filepath.Join(home, ".local", "share")
+	}
+	return filepath.Join(base, "shiro", "shiro.db")
+}
 
 // ErrPartial signals a scan that completed with non-fatal errors (exit 3).
 var ErrPartial = errors.New("partial scan")
@@ -65,6 +81,24 @@ func NewScanCmd() *cobra.Command {
 			})
 			if err != nil {
 				return err
+			}
+			if !f.NoStore {
+				dbPath := f.DBPath
+				if dbPath == "" {
+					dbPath = defaultDBPath()
+				}
+				if dbPath != "" {
+					if err := os.MkdirAll(filepath.Dir(dbPath), 0o755); err == nil {
+						if st, err := sqlite.Open(dbPath); err == nil {
+							if _, err := st.SaveScan(sum, version); err != nil {
+								fmt.Fprintf(cmd.ErrOrStderr(), "warning: store failed: %v\n", err)
+							}
+							_ = st.Close()
+						} else {
+							fmt.Fprintf(cmd.ErrOrStderr(), "warning: store failed: %v\n", err)
+						}
+					}
+				}
 			}
 			if f.JSON {
 				_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(output.RenderJSON(sum, version)))
