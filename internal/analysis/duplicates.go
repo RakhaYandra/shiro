@@ -114,7 +114,6 @@ func hashGroups(size int64, refs []dupRef, rep *DupReport) []DupGroup {
 				rep.Partial = true
 				continue
 			}
-			rep.FilesHashed++
 			byFull[h] = append(byFull[h], r.path)
 		}
 		for h, paths := range byFull {
