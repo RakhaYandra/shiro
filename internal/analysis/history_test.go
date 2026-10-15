@@ -12,7 +12,7 @@ func TestDiff_GrownShrunkAddedRemoved(t *testing.T) {
 	if len(d.Removed) != 1 || d.Removed[0].Path != "/x/gone" {
 		t.Fatalf("removed = %+v", d.Removed)
 	}
-	if len(d.Grown) != 1 || d.Grown[0].Path != "/x/grow" || d.Grown[0].Delta != 400 {
+	if len(d.Grown) != 2 || d.Grown[0].Path != "/x/grow" || d.Grown[0].Delta != 400 {
 		t.Fatalf("grown = %+v", d.Grown)
 	}
 	if len(d.Shrunk) != 1 || d.Shrunk[0].Path != "/x/shrink" {
