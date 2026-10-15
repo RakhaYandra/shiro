@@ -2,9 +2,41 @@ package cli
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
+
+	"github.com/RakhaYandra/shiro/internal/output"
+	"github.com/RakhaYandra/shiro/internal/scanner"
 )
+
+// ErrPartial signals a scan that completed with non-fatal errors (exit 3).
+var ErrPartial = errors.New("partial scan")
+
+// ErrUsage signals invalid CLI usage (exit 2).
+var ErrUsage = errors.New("invalid usage")
+
+// ExitCode maps errors to the documented CLI contract:
+// 0 ok, 1 general error, 2 invalid CLI usage, 3 partial scan.
+func ExitCode(err error) int {
+	if err == nil {
+		return 0
+	}
+	if errors.Is(err, ErrPartial) {
+		return 3
+	}
+	if errors.Is(err, ErrUsage) {
+		return 2
+	}
+	msg := err.Error()
+	for _, s := range []string{"unknown flag", "accepts ", "requires ", "invalid argument"} {
+		if strings.Contains(msg, s) {
+			return 2
+		}
+	}
+	return 1
+}
 
 type ScanFlags struct {
 	JSON       bool
@@ -23,7 +55,29 @@ func NewScanCmd() *cobra.Command {
 		Short: "Scan storage (read-only)",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return errors.New("scan not implemented yet")
+			minSize, err := output.ParseSize(f.MinSize)
+			if err != nil {
+				return fmt.Errorf("%w: %v", ErrUsage, err)
+			}
+			sum, err := scanner.Aggregate(args[0], scanner.Options{
+				Excludes:      f.Excludes,
+				OneFileSystem: f.OneFileSys,
+			})
+			if err != nil {
+				return err
+			}
+			if f.JSON {
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(output.RenderJSON(sum, version)))
+			} else {
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), output.RenderText(sum, output.DisplayOpts{
+					Depth:   f.Depth,
+					MinSize: minSize,
+				}))
+			}
+			if sum.Partial {
+				return ErrPartial
+			}
+			return nil
 		},
 	}
 	cmd.Flags().BoolVar(&f.JSON, "json", false, "machine-readable output")
