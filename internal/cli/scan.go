@@ -7,13 +7,13 @@ import (
 )
 
 type ScanFlags struct {
-	JSON         bool
-	Depth        int
-	Excludes     []string
-	OneFileSys   bool
-	MinSize      string
-	NoStore      bool
-	DBPath       string
+	JSON       bool
+	Depth      int
+	Excludes   []string
+	OneFileSys bool
+	MinSize    string
+	NoStore    bool
+	DBPath     string
 }
 
 func NewScanCmd() *cobra.Command {
