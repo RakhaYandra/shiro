@@ -149,3 +149,25 @@ func TestWalk_PermissionDenied_Partial(t *testing.T) {
 		t.Fatal("want partial errors recorded, got none")
 	}
 }
+
+func TestWalk_Exclude_SymlinkedPath(t *testing.T) {
+	root := t.TempDir()
+	real := filepath.Join(root, "real")
+	writeFile(t, filepath.Join(real, "x.txt"), 50)
+	writeFile(t, filepath.Join(root, "keep.txt"), 5)
+	link := filepath.Join(root, "alias")
+	if err := os.Symlink(real, link); err != nil {
+		t.Fatal(err)
+	}
+	// Exclude expressed through the symlinked path must still apply.
+	entries, _ := collect(t, root, Options{Excludes: []string{link}})
+	var bytes int64
+	for _, e := range entries {
+		if e.Kind == KindFile {
+			bytes += e.ApparentBytes
+		}
+	}
+	if bytes != 5 {
+		t.Fatalf("want 5 bytes after symlinked exclude, got %d", bytes)
+	}
+}

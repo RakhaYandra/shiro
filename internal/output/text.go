@@ -30,14 +30,22 @@ func RenderText(s scanner.Summary, o DisplayOpts) string {
 	}
 	if s.Tree != nil {
 		b.WriteString("\nTop:\n")
-		kids := append([]*scanner.DirNode(nil), s.Tree.Children...)
-		sort.Slice(kids, func(i, j int) bool { return kids[i].Apparent > kids[j].Apparent })
-		for _, k := range kids {
-			if k.Apparent < o.MinSize {
-				continue
-			}
-			fmt.Fprintf(&b, "  %8s  %s\n", Human(k.Apparent), k.Path)
-		}
+		renderLevel(&b, s.Tree.Children, o, 1)
 	}
 	return b.String()
+}
+
+func renderLevel(b *strings.Builder, kids []*scanner.DirNode, o DisplayOpts, level int) {
+	if o.Depth > 0 && level > o.Depth {
+		return
+	}
+	sorted := append([]*scanner.DirNode(nil), kids...)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Apparent > sorted[j].Apparent })
+	for _, k := range sorted {
+		if k.Apparent < o.MinSize {
+			continue
+		}
+		fmt.Fprintf(b, "  %8s  %s\n", Human(k.Apparent), k.Path)
+		renderLevel(b, k.Children, o, level+1)
+	}
 }

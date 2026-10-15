@@ -64,3 +64,21 @@ func TestNoop_ScanWorks(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestSQLite_FKEnforced_MultiConn(t *testing.T) {
+	db := filepath.Join(t.TempDir(), "shiro.db")
+	st, err := Open(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	done := make(chan error, 16)
+	for i := 0; i < 16; i++ {
+		go func() { done <- st.InsertEntryOrphan() }()
+	}
+	for i := 0; i < 16; i++ {
+		if err := <-done; err == nil {
+			t.Fatal("orphan insert succeeded on some pooled conn: FK not enforced")
+		}
+	}
+}

@@ -27,6 +27,9 @@ func Open(path string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
+	// PRAGMA foreign_keys is per-connection; pin the pool to one conn
+	// so enforcement holds for every statement.
+	db.SetMaxOpenConns(1)
 	if _, err := db.Exec(`PRAGMA foreign_keys = ON`); err != nil {
 		db.Close()
 		return nil, err

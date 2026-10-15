@@ -26,6 +26,9 @@ func Walk(root string, opts Options) (<-chan Entry, <-chan ScanError) {
 		excludes := make([]string, 0, len(opts.Excludes))
 		for _, x := range opts.Excludes {
 			if a, err := filepath.Abs(x); err == nil {
+				if resolved, err := filepath.EvalSymlinks(a); err == nil {
+					a = resolved
+				}
 				excludes = append(excludes, a)
 			}
 		}
