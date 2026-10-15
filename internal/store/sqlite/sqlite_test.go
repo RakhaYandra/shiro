@@ -130,6 +130,17 @@ func TestSQLite_ListAndGet(t *testing.T) {
 	if len(scans) != 2 || scans[0].StartedAt < scans[1].StartedAt {
 		t.Fatalf("want 2 scans desc, got %+v", scans)
 	}
+	secondID, err := st.SaveScan(testSummary(), "v")
+	if err != nil {
+		t.Fatal(err)
+	}
+	scans, err = st.ListScans("/tmp/x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if scans[0].ID != secondID {
+		t.Fatalf("newest scan must come first, got %+v", scans)
+	}
 	entries, err := st.GetEntries(id1)
 	if err != nil {
 		t.Fatal(err)

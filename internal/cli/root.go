@@ -17,6 +17,8 @@ func NewRootCmd() *cobra.Command {
 	root.AddCommand(NewExplainCmd())
 	root.AddCommand(NewCleanCmd())
 	root.AddCommand(NewDuplicatesCmd())
+	root.AddCommand(NewHistoryCmd())
+	root.AddCommand(NewDiffCmd())
 	return root
 }
 

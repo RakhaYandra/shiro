@@ -99,10 +99,10 @@ func (s *Store) EntryCount(scanID string) (int, error) {
 }
 
 type ScanMeta struct {
-	ID         string
-	StartedAt  int64
-	Status     string
-	TotalBytes int64
+	ID         string `json:"id"`
+	StartedAt  int64  `json:"started_at"`
+	Status     string `json:"status"`
+	TotalBytes int64  `json:"total_bytes"`
 }
 
 func (s *Store) ListScans(root string) ([]ScanMeta, error) {
@@ -110,7 +110,7 @@ func (s *Store) ListScans(root string) ([]ScanMeta, error) {
 		`SELECT s.id, s.started_at, s.status,
 			COALESCE((SELECT e.apparent_bytes FROM entries e
 				WHERE e.scan_id = s.id AND e.path = s.root_path), 0)
-		 FROM scans s WHERE s.root_path = ? ORDER BY s.started_at DESC, s.id DESC`, root)
+		FROM scans s WHERE s.root_path = ? ORDER BY s.started_at DESC, s.rowid DESC`, root)
 	if err != nil {
 		return nil, err
 	}

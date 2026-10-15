@@ -25,3 +25,9 @@ allocated_bytes, allocated_known, modtime_unix, device_id, inode}`
 Tables `scans(id, root_path, started_at, finished_at, status, scanner_version)`
 and `entries(scan_id, path, kind, apparent_bytes, allocated_bytes, modified_at)`.
 FK enforced. No file contents or secrets stored. `--no-store` disables.
+
+History stores every directory node (full tree), not just top level —
+roughly one row per directory. Individual files are never stored. Diff
+compares per-path bytes between two scans of the same root; the total is
+the shallowest common path's delta (avoids double-counting nested dirs).
+No auto-prune: history grows one scan row-set per `scan`; prune deferred.

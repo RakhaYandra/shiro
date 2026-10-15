@@ -6,10 +6,10 @@ import (
 )
 
 type Change struct {
-	Path  string
-	Old   int64
-	New   int64
-	Delta int64
+	Path  string `json:"path"`
+	Old   int64  `json:"old_bytes"`
+	New   int64  `json:"new_bytes"`
+	Delta int64  `json:"delta"`
 }
 
 type HistoryDiff struct {

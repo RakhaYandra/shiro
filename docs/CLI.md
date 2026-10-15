@@ -15,6 +15,9 @@
 | `shiro clean --plan plan.json --execute --yes` | Non-interactive (policy still enforced). |
 | `shiro duplicates PATH` | Report identical content (sha256, two-stage). Read-only, never deletes. |
 | `shiro duplicates PATH --min-size 10MiB --json` | Tune hashing scope; machine output. |
+| `shiro history [PATH]` | List recorded scans (needs store; `--no-store` scans absent). |
+| `shiro diff [PATH]` | Compare two newest scans for PATH. |
+| `shiro diff --from ID --to ID` | Compare explicit scans (must share root). |
 | `shiro --version` / `--help` | Always available. |
 
 ## Flags (`scan`)
