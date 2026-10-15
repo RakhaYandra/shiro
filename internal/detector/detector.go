@@ -22,11 +22,14 @@ type Finding struct {
 }
 
 // Rule matches directories by basename, with optional marker files that
-// raise confidence when present in the candidate's parent.
+// raise confidence when present in the candidate's parent. Parent, when
+// set, constrains the candidate's parent directory basename (e.g. mod
+// only counts under pkg, avoiding generic "mod" directories).
 type Rule struct {
 	ID       string
 	Category string
 	Basename string
+	Parent   string
 	Markers  []string
 	Describe string
 }
@@ -59,8 +62,15 @@ func (r *Registry) Detect(sum scanner.Summary) []Finding {
 			if filepath.Base(n.Path) != rule.Basename {
 				continue
 			}
+			if rule.Parent != "" && filepath.Base(filepath.Dir(n.Path)) != rule.Parent {
+				continue
+			}
 			marker := ""
 			for _, m := range rule.Markers {
+				if _, err := r.stat(filepath.Join(n.Path, m)); err == nil {
+					marker = m + " (inside)"
+					break
+				}
 				if _, err := r.stat(filepath.Join(filepath.Dir(n.Path), m)); err == nil {
 					marker = m
 					break
