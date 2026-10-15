@@ -6,7 +6,6 @@ import (
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
-// Category is one storage bucket with traceable evidence.
 type Category struct {
 	Category string
 	Bytes    int64
@@ -16,34 +15,26 @@ type Category struct {
 }
 
 var extCategory = map[string]string{
-	// media
 	".mp4": "media", ".mkv": "media", ".avi": "media", ".mov": "media",
 	".mp3": "media", ".flac": "media", ".ogg": "media", ".wav": "media",
 	".jpg": "media", ".jpeg": "media", ".png": "media", ".gif": "media",
 	".webp": "media", ".svg": "media",
-	// archives
 	".zip": "archives", ".tar": "archives", ".gz": "archives",
 	".xz": "archives", ".7z": "archives", ".rar": "archives",
 	".deb": "archives", ".rpm": "archives", ".pkg": "archives",
-	// source
 	".go": "source", ".rs": "source", ".py": "source", ".js": "source",
 	".ts": "source", ".tsx": "source", ".jsx": "source", ".php": "source",
 	".java": "source", ".c": "source", ".h": "source", ".cpp": "source",
 	".rb": "source", ".lua": "source", ".sh": "source", ".sql": "source",
-	// docs
 	".md": "documents", ".txt": "documents", ".pdf": "documents",
 	".docx": "documents", ".odt": "documents", ".tex": "documents",
-	// data
 	".db": "data", ".sqlite": "data", ".sqlite3": "data", ".json": "data",
 	".csv": "data", ".parquet": "data", ".yaml": "data", ".yml": "data",
 	".toml": "data",
-	// binaries
-	".o": "binaries", ".a": "binaries", ".so": "binaries",
+	".o":    "binaries", ".a": "binaries", ".so": "binaries",
 	".exe": "binaries", ".elf": "binaries", ".wasm": "binaries",
 }
 
-// Categorize folds extension totals into named buckets, largest first.
-// Unknown extensions and extensionless files go to "other".
 func Categorize(sum scanner.Summary) []Category {
 	buckets := map[string]*Category{}
 	get := func(name, rule, reason string) *Category {

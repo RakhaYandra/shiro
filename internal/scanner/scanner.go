@@ -1,6 +1,5 @@
 package scanner
 
-// FileKind classifies an inventory entry.
 type FileKind string
 
 const (
@@ -10,7 +9,6 @@ const (
 	KindOther     FileKind = "other"
 )
 
-// Entry is one filesystem inventory record.
 type Entry struct {
 	Path           string
 	Kind           FileKind
@@ -22,13 +20,11 @@ type Entry struct {
 	Inode          uint64
 }
 
-// ScanError records a non-fatal per-path failure.
 type ScanError struct {
 	Path string
 	Err  string
 }
 
-// Options controls traversal scope.
 type Options struct {
 	Excludes      []string
 	OneFileSystem bool

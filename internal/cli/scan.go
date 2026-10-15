@@ -14,7 +14,6 @@ import (
 	"github.com/RakhaYandra/shiro/internal/store/sqlite"
 )
 
-// defaultDBPath is ~/.local/share/shiro/shiro.db (XDG_DATA_HOME aware).
 func defaultDBPath() string {
 	base := os.Getenv("XDG_DATA_HOME")
 	if base == "" {
@@ -27,14 +26,10 @@ func defaultDBPath() string {
 	return filepath.Join(base, "shiro", "shiro.db")
 }
 
-// ErrPartial signals a scan that completed with non-fatal errors (exit 3).
 var ErrPartial = errors.New("partial scan")
 
-// ErrUsage signals invalid CLI usage (exit 2).
 var ErrUsage = errors.New("invalid usage")
 
-// ExitCode maps errors to the documented CLI contract:
-// 0 ok, 1 general error, 2 invalid CLI usage, 3 partial scan.
 func ExitCode(err error) int {
 	if err == nil {
 		return 0

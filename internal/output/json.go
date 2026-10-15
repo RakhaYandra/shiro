@@ -6,7 +6,6 @@ import (
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
-// RenderJSON emits stable machine-readable inventory (schema_version 1).
 func RenderJSON(s scanner.Summary, scannerVersion string) []byte {
 	type child struct {
 		Path     string `json:"path"`

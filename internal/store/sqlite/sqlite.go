@@ -12,23 +12,18 @@ import (
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
-// Store is a SQLite-backed inventory store.
 type Store struct{ db *sql.DB }
 
-// NoopStore skips persistence; scans still work.
 type NoopStore struct{}
 
 func (NoopStore) SaveScan(scanner.Summary, string) (string, error) { return "", nil }
 func (NoopStore) Close() error                                     { return nil }
 
-// Open creates the DB file (if needed), applies schema, enforces FK.
 func Open(path string) (*Store, error) {
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		return nil, err
 	}
-	// PRAGMA foreign_keys is per-connection; pin the pool to one conn
-	// so enforcement holds for every statement.
 	db.SetMaxOpenConns(1)
 	if _, err := db.Exec(`PRAGMA foreign_keys = ON`); err != nil {
 		db.Close()
@@ -36,8 +31,6 @@ func Open(path string) (*Store, error) {
 	}
 	schema, err := os.ReadFile(schemaPath())
 	if err != nil {
-		// Fallback: embedded minimal schema when migrations dir is absent
-		// (e.g. installed binary without source tree).
 		schema = []byte(fallbackSchema)
 	}
 	if _, err := db.Exec(string(schema)); err != nil {
@@ -49,7 +42,6 @@ func Open(path string) (*Store, error) {
 
 func (s *Store) Close() error { return s.db.Close() }
 
-// SaveScan stores the summary + top-level entries in one transaction.
 func (s *Store) SaveScan(sum scanner.Summary, scannerVersion string) (string, error) {
 	id := newID()
 	now := time.Now().Unix()
@@ -97,14 +89,12 @@ func (s *Store) SaveScan(sum scanner.Summary, scannerVersion string) (string, er
 	return id, nil
 }
 
-// EntryCount returns rows saved for a scan (test helper, not a public API).
 func (s *Store) EntryCount(scanID string) (int, error) {
 	var n int
 	err := s.db.QueryRow(`SELECT COUNT(*) FROM entries WHERE scan_id = ?`, scanID).Scan(&n)
 	return n, err
 }
 
-// InsertEntryOrphan must fail under FK enforcement.
 func (s *Store) InsertEntryOrphan() error {
 	_, err := s.db.Exec(
 		`INSERT INTO entries(scan_id, path, kind, apparent_bytes) VALUES(?, ?, ?, ?)`,

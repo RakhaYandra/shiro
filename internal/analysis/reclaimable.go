@@ -2,15 +2,12 @@ package analysis
 
 import "github.com/RakhaYandra/shiro/internal/scanner"
 
-// Estimate is a conservative reclaimable-space hint.
 type Estimate struct {
 	Bytes  int64
 	Known  bool
 	Reason string
 }
 
-// Reclaimable reports sparse-file savings only. Cleanup candidates arrive
-// with the detector + planner phases; until then the rest is unknown.
 func Reclaimable(sum scanner.Summary) Estimate {
 	if !sum.AllocatedKnown {
 		return Estimate{

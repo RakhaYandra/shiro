@@ -11,7 +11,6 @@ import (
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
-// RenderExplainText prints categories, top dirs/files, and the estimate.
 func RenderExplainText(s scanner.Summary, _ string) string {
 	var b strings.Builder
 	b.WriteString("Shiro · Explain\n\n")
@@ -56,7 +55,6 @@ func RenderExplainText(s scanner.Summary, _ string) string {
 	return b.String()
 }
 
-// RenderExplainJSON emits the machine-readable explanation (schema_version 1).
 func RenderExplainJSON(s scanner.Summary, r analysis.Estimate, scannerVersion string) []byte {
 	type cat struct {
 		Category string `json:"category"`

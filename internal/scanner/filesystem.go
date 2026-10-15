@@ -5,7 +5,6 @@ import (
 	"syscall"
 )
 
-// meta extracts portable metadata from an lstat result.
 func meta(path string, fi os.FileInfo) Entry {
 	e := Entry{Path: path, ModTimeUnix: fi.ModTime().Unix()}
 	mode := fi.Mode()
@@ -31,7 +30,6 @@ func meta(path string, fi os.FileInfo) Entry {
 	return e
 }
 
-// deviceOf returns the device ID for boundary checks (stubbed in tests if needed).
 func deviceOf(path string) (uint64, error) {
 	var st syscall.Stat_t
 	if err := syscall.Stat(path, &st); err != nil {

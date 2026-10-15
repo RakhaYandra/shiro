@@ -8,13 +8,11 @@ import (
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
-// DisplayOpts controls rendering only (never scan scope).
 type DisplayOpts struct {
 	Depth   int
 	MinSize int64
 }
 
-// RenderText prints a human-readable summary with top children.
 func RenderText(s scanner.Summary, o DisplayOpts) string {
 	var b strings.Builder
 	b.WriteString("Shiro · Storage Intelligence\n\n")

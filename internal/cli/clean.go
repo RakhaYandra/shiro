@@ -14,7 +14,6 @@ import (
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
-// ErrNoDryRun rejects any clean invocation without --dry-run (no executor yet).
 var ErrNoDryRun = errors.New("refusing to clean without --dry-run")
 
 func NewCleanCmd() *cobra.Command {

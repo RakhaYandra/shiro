@@ -8,7 +8,6 @@ import (
 	"github.com/RakhaYandra/shiro/internal/cleanup"
 )
 
-// RenderPlanText prints a dry-run plan with denials. Never implies execution.
 func RenderPlanText(p cleanup.CleanupPlan) string {
 	var b strings.Builder
 	b.WriteString("Shiro · Cleanup plan (DRY-RUN, nothing removed)\n\n")
@@ -34,7 +33,6 @@ func RenderPlanText(p cleanup.CleanupPlan) string {
 	return b.String()
 }
 
-// RenderPlanJSON emits the plan (schema_version 1).
 func RenderPlanJSON(p cleanup.CleanupPlan) []byte {
 	raw, _ := json.MarshalIndent(map[string]any{
 		"schema_version": 1,

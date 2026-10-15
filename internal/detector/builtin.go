@@ -1,6 +1,5 @@
 package detector
 
-// DefaultRegistry returns the built-in M3 rule set.
 func DefaultRegistry() *Registry {
 	reg := NewRegistry()
 	for _, r := range []Rule{

@@ -8,8 +8,6 @@ import (
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
-// Finding is one classified artifact candidate. It carries evidence only;
-// whether removal is allowed is decided by the cleanup policy (later phase).
 type Finding struct {
 	RuleID          string
 	Path            string
@@ -21,10 +19,6 @@ type Finding struct {
 	SuggestedAction string
 }
 
-// Rule matches directories by basename, with optional marker files that
-// raise confidence when present in the candidate's parent. Parent, when
-// set, constrains the candidate's parent directory basename (e.g. mod
-// only counts under pkg, avoiding generic "mod" directories).
 type Rule struct {
 	ID       string
 	Category string
@@ -34,11 +28,9 @@ type Rule struct {
 	Describe string
 }
 
-// Registry holds rules and runs them against a scan summary.
 type Registry struct {
 	rules []Rule
-	// stat is swappable for tests (default os.Stat).
-	stat func(string) (os.FileInfo, error)
+	stat  func(string) (os.FileInfo, error)
 }
 
 func NewRegistry() *Registry {
@@ -49,8 +41,6 @@ func (r *Registry) Register(rule Rule) {
 	r.rules = append(r.rules, rule)
 }
 
-// Detect walks the directory tree and returns one finding per match.
-// Risk is always "review" at this phase.
 func (r *Registry) Detect(sum scanner.Summary) []Finding {
 	var out []Finding
 	if sum.Tree == nil {

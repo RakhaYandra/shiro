@@ -7,13 +7,11 @@ import (
 	"strings"
 )
 
-// FileRef is one large-file record for ranking.
 type FileRef struct {
 	Path          string
 	ApparentBytes int64
 }
 
-// topHeap is a bounded min-heap of largest files.
 type topHeap []FileRef
 
 func (h topHeap) Len() int            { return len(h) }
@@ -28,10 +26,8 @@ func (h *topHeap) Pop() interface{} {
 	return x
 }
 
-// maxTopFiles bounds ranking memory regardless of tree size.
 const maxTopFiles = 100
 
-// DirNode is one directory subtree with rolled-up sizes.
 type DirNode struct {
 	Path      string
 	Apparent  int64
@@ -41,7 +37,6 @@ type DirNode struct {
 	Dirs      int64
 }
 
-// Summary is the full scan result.
 type Summary struct {
 	Root           string
 	TotalApparent  int64
@@ -55,18 +50,12 @@ type Summary struct {
 	Partial        bool
 	Tree           *DirNode
 	TopFiles       []FileRef
-	// ExtTotals maps lowercase file extension (or "" for none) to
-	// apparent bytes. Bounded key space, collected during the walk.
-	ExtTotals map[string]int64
-	ExtCounts map[string]int64
-	// SparseSavings sums (apparent - allocated) over files where
-	// allocated is known and smaller. Conservative reclaimable hint.
-	SparseSavings int64
-	SparseFiles   int64
+	ExtTotals      map[string]int64
+	ExtCounts      map[string]int64
+	SparseSavings  int64
+	SparseFiles    int64
 }
 
-// Aggregate walks root and rolls sizes bottom-up.
-// Hardlinks (same dev+ino) count once. Symlinks count as entries, size 0.
 func Aggregate(root string, opts Options) (Summary, error) {
 	abs, err := filepath.Abs(root)
 	if err != nil {
@@ -153,7 +142,6 @@ func Aggregate(root string, opts Options) (Summary, error) {
 	return sum, nil
 }
 
-// fileExt returns the lowercase extension including the dot, or "".
 func fileExt(path string) string {
 	ext := filepath.Ext(path)
 	if ext == "" {

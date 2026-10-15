@@ -11,8 +11,6 @@ import (
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
-// CleanupItem is one planned action with a live-filesystem snapshot for
-// stale detection at execution time.
 type CleanupItem struct {
 	Path            string
 	Action          string
@@ -24,14 +22,12 @@ type CleanupItem struct {
 	ExpectedModTime int64
 }
 
-// Denied records a finding rejected by policy.
 type Denied struct {
 	Path   string
 	RuleID string
 	Reason string
 }
 
-// CleanupPlan is a reviewable, print-only plan (no persistence in M4).
 type CleanupPlan struct {
 	ID            string
 	Root          string
@@ -41,14 +37,11 @@ type CleanupPlan struct {
 	Denied        []Denied
 }
 
-// Filter narrows findings before planning.
 type Filter struct {
 	Category string
 	MinSize  int64
 }
 
-// Plan converts findings into a reviewable plan. Denied findings are
-// reported, not dropped silently. Pure: no filesystem mutation.
 func Plan(pol policy.Policy, findings []detector.Finding, root string, f Filter) (CleanupPlan, error) {
 	plan := CleanupPlan{
 		ID:            newID(),
@@ -85,8 +78,6 @@ func Plan(pol policy.Policy, findings []detector.Finding, root string, f Filter)
 	return plan, nil
 }
 
-// snapshot reads live size+mtime. Directories are re-aggregated so the
-// plan reflects the live subtree, not the earlier scan.
 func snapshot(path string) (int64, int64) {
 	fi, err := os.Lstat(path)
 	if err != nil {

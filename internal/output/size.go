@@ -2,7 +2,6 @@ package output
 
 import "fmt"
 
-// Human formats bytes in IEC units.
 func Human(b int64) string {
 	const u = 1024
 	if b < u {
@@ -18,7 +17,6 @@ func Human(b int64) string {
 	return fmt.Sprintf("%d B", b)
 }
 
-// ParseSize parses "100MiB", "2GiB", "512KiB", "1024" (bytes).
 func ParseSize(s string) (int64, error) {
 	if s == "" {
 		return 0, nil

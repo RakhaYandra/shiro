@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-// Walk streams entries under root without following symlinks.
-// Non-fatal errors go to the second channel; both channels are closed.
 func Walk(root string, opts Options) (<-chan Entry, <-chan ScanError) {
 	entries := make(chan Entry, 256)
 	errs := make(chan ScanError, 64)

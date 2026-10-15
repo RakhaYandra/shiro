@@ -7,16 +7,11 @@ import (
 	"strings"
 )
 
-// Policy decides whether a cleanup target is allowed. Protected lists are
-// fields (not globals) so tests inject fake homes.
 type Policy struct {
-	// Strict denies the path itself and everything beneath it.
 	Strict []string
-	// Roots denies only the path itself (artifact children stay eligible).
-	Roots []string
+	Roots  []string
 }
 
-// Default builds the two-tier baseline for a home directory.
 func Default(home string) Policy {
 	strict := []string{".ssh", ".gnupg", ".password-store"}
 	roots := []string{"Documents", "Projects", ".config", ".local/share", ".local/state"}
@@ -30,8 +25,6 @@ func Default(home string) Policy {
 	return p
 }
 
-// canonical resolves a path for comparison. Unresolvable paths (missing)
-// fall back to absolute-clean form; callers stat targets separately.
 func canonical(path string) string {
 	abs, err := filepath.Abs(path)
 	if err != nil {
@@ -47,7 +40,6 @@ func withinOrEqual(path, base string) bool {
 	return path == base || strings.HasPrefix(path, base+string(os.PathSeparator))
 }
 
-// Check denies protected targets, returning the reason.
 func (p Policy) Check(target string) error {
 	canon := canonical(target)
 	for _, s := range p.Strict {
@@ -63,7 +55,6 @@ func (p Policy) Check(target string) error {
 	return nil
 }
 
-// CheckIn additionally requires the target inside the scan root.
 func (p Policy) CheckIn(target, root string) error {
 	if root == "" {
 		return p.Check(target)
