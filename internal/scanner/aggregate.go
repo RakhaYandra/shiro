@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 // FileRef is one large-file record for ranking.
@@ -54,6 +55,10 @@ type Summary struct {
 	Partial        bool
 	Tree           *DirNode
 	TopFiles       []FileRef
+	// ExtTotals maps lowercase file extension (or "" for none) to
+	// apparent bytes. Bounded key space, collected during the walk.
+	ExtTotals map[string]int64
+	ExtCounts map[string]int64
 }
 
 // Aggregate walks root and rolls sizes bottom-up.
@@ -107,6 +112,13 @@ func Aggregate(root string, opts Options) (Summary, error) {
 				sum.TotalAllocated += e.AllocatedBytes
 				sum.AllocatedKnown = true
 			}
+			ext := fileExt(e.Path)
+			if sum.ExtTotals == nil {
+				sum.ExtTotals = map[string]int64{}
+				sum.ExtCounts = map[string]int64{}
+			}
+			sum.ExtTotals[ext] += e.ApparentBytes
+			sum.ExtCounts[ext]++
 			pushTop(FileRef{Path: e.Path, ApparentBytes: e.ApparentBytes})
 			addToParents(nodes, abs, dirOf(e.Path, abs), e.ApparentBytes, e.AllocatedBytes, e.AllocatedKnown)
 		case KindDirectory:
@@ -131,6 +143,15 @@ func Aggregate(root string, opts Options) (Summary, error) {
 		sum.TopFiles[i] = heap.Pop(&tops).(FileRef)
 	}
 	return sum, nil
+}
+
+// fileExt returns the lowercase extension including the dot, or "".
+func fileExt(path string) string {
+	ext := filepath.Ext(path)
+	if ext == "" {
+		return ""
+	}
+	return strings.ToLower(ext)
 }
 
 func dirOf(path, root string) string {
