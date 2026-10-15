@@ -59,6 +59,10 @@ type Summary struct {
 	// apparent bytes. Bounded key space, collected during the walk.
 	ExtTotals map[string]int64
 	ExtCounts map[string]int64
+	// SparseSavings sums (apparent - allocated) over files where
+	// allocated is known and smaller. Conservative reclaimable hint.
+	SparseSavings int64
+	SparseFiles   int64
 }
 
 // Aggregate walks root and rolls sizes bottom-up.
@@ -111,6 +115,10 @@ func Aggregate(root string, opts Options) (Summary, error) {
 			if e.AllocatedKnown {
 				sum.TotalAllocated += e.AllocatedBytes
 				sum.AllocatedKnown = true
+				if diff := e.ApparentBytes - e.AllocatedBytes; diff > 0 {
+					sum.SparseSavings += diff
+					sum.SparseFiles++
+				}
 			}
 			ext := fileExt(e.Path)
 			if sum.ExtTotals == nil {
