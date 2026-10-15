@@ -6,6 +6,8 @@
 |---|---|
 | `shiro scan PATH` | Read-only scan, text summary. Never modifies target. |
 | `shiro scan PATH --json` | Stable JSON (`schema_version: 1`). |
+| `shiro explain [PATH]` | Categories + top dirs/files + reclaimable estimate. Read-only, no store. |
+| `shiro explain [PATH] --json` | Machine-readable explanation (`schema_version: 1`). |
 | `shiro --version` / `--help` | Always available. |
 
 ## Flags (`scan`)
