@@ -27,3 +27,13 @@ Method: code grep for destructive calls, test evidence per threat.
   miss sub-second swaps; size check covers content changes. Accepted.
 - No quarantine/undo: deletions are final; mitigated by preview + prompt +
   audit. Documented in SAFETY.md.
+
+## Addendum v0.3.0 (new surface)
+
+- Docker socket: client type exposes GET only; fake-socket tests assert
+  parse + unavailable handling; no POST/DELETE path exists in non-test code.
+- Plan file: strict decode (`DisallowUnknownFields`, schema==1, id+root
+  required); 1M fuzz execs clean.
+- TUI: zero references to `cleanup.Execute` (lint-enforced); all numbers
+  from core packages; prompt/--yes flow untouched (execute stays CLI-only).
+- Duplicates/history: read-only; hashing reads content but stores nothing.
