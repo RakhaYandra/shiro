@@ -34,14 +34,7 @@ func RenderPlanText(p cleanup.CleanupPlan) string {
 }
 
 func RenderPlanJSON(p cleanup.CleanupPlan) []byte {
-	raw, _ := json.MarshalIndent(map[string]any{
-		"schema_version": 1,
-		"id":             p.ID,
-		"root":           p.Root,
-		"created_at":     p.CreatedAt,
-		"dry_run":        true,
-		"items":          p.Items,
-		"denied":         p.Denied,
-	}, "", "  ")
+	p.DryRun = true
+	raw, _ := json.MarshalIndent(p, "", "  ")
 	return append(raw, '\n')
 }

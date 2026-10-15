@@ -12,29 +12,30 @@ import (
 )
 
 type CleanupItem struct {
-	Path            string
-	Action          string
-	Reason          string
-	Risk            string
-	ExpectedBytes   int64
-	RuleID          string
-	ExpectedSize    int64
-	ExpectedModTime int64
+	Path            string `json:"path"`
+	Action          string `json:"action"`
+	Reason          string `json:"reason"`
+	Risk            string `json:"risk"`
+	ExpectedBytes   int64  `json:"expected_bytes"`
+	RuleID          string `json:"rule_id"`
+	ExpectedSize    int64  `json:"expected_size"`
+	ExpectedModTime int64  `json:"expected_mod_time"`
 }
 
 type Denied struct {
-	Path   string
-	RuleID string
-	Reason string
+	Path   string `json:"path"`
+	RuleID string `json:"rule_id"`
+	Reason string `json:"reason"`
 }
 
 type CleanupPlan struct {
-	ID            string
-	Root          string
-	CreatedAt     int64
-	SchemaVersion int
-	Items         []CleanupItem
-	Denied        []Denied
+	ID            string        `json:"id"`
+	Root          string        `json:"root"`
+	CreatedAt     int64         `json:"created_at"`
+	SchemaVersion int           `json:"schema_version"`
+	DryRun        bool          `json:"dry_run,omitempty"`
+	Items         []CleanupItem `json:"items"`
+	Denied        []Denied      `json:"denied"`
 }
 
 type Filter struct {
@@ -48,6 +49,7 @@ func Plan(pol policy.Policy, findings []detector.Finding, root string, f Filter)
 		Root:          root,
 		CreatedAt:     time.Now().Unix(),
 		SchemaVersion: 1,
+		DryRun:        true,
 	}
 	for _, fd := range findings {
 		if f.Category != "" && fd.Category != f.Category {
