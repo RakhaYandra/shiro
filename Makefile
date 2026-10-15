@@ -15,6 +15,7 @@ release:
 lint:
 	test -z "$$(gofmt -l cmd internal tests)" || (gofmt -l cmd internal tests && exit 1)
 	go vet ./...
+	test -z "$$(rg -l "cleanup\.Execute" internal/tui || true)" || (echo "tui must not execute cleanup" && exit 1)
 
 install: build
 	install -Dm755 bin/shiro $(PREFIX)/bin/shiro

@@ -20,6 +20,7 @@ func NewRootCmd() *cobra.Command {
 	root.AddCommand(NewHistoryCmd())
 	root.AddCommand(NewDiffCmd())
 	root.AddCommand(NewDockerCmd())
+	root.AddCommand(NewTuiCmd())
 	return root
 }
 

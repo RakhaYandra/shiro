@@ -19,6 +19,7 @@
 | `shiro diff [PATH]` | Compare two newest scans for PATH. |
 | `shiro diff --from ID --to ID` | Compare explicit scans (must share root). |
 | `shiro docker [--json]` | Docker inventory via Engine API (GET only). `--host` overrides socket. Daemon down → exit 1. |
+| `shiro tui [PATH]` | Interactive tree + findings + dry-run preview. Requires terminal; never executes cleanup. |
 | `shiro --version` / `--help` | Always available. |
 
 ## Flags (`scan`)
