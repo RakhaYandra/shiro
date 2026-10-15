@@ -172,6 +172,10 @@ func (m Model) treeView() string {
 			strings.Repeat("  ", r.depth), shortBase(r.node.Path),
 			output.Human(r.node.Apparent))
 	}
+	if len(m.rows) > 0 {
+		b.WriteString("\n--- selected ---\n")
+		b.WriteString(m.nodeDetail(m.rows[m.cursor].node.Path))
+	}
 	return b.String()
 }
 
