@@ -18,3 +18,13 @@ Notes:
 - Content hashing: N/A (no hashing phase yet; M7 duplicates will add a
   separate benchmark — metadata scan vs hashing must stay split).
 - Store writes are out of the hot path (one transaction per scan).
+
+## Duplicates (v0.3.0-dev)
+
+| Benchmark | ns/op | B/op | allocs/op |
+|---|---|---|---|
+| FindDuplicates 10×2MiB identical | ~13.4ms | ~704KB | ~303 |
+
+Hashing dominates: 20MiB read+sha256 in ~13ms (~1.5GiB/s). Metadata scan
+vs hashing stay split — hashing only touches `--min-size` candidates
+(default 1MiB); unchanged files are never re-read within a run.

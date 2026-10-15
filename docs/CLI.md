@@ -13,6 +13,8 @@
 | `shiro clean PATH --dry-run --json > plan.json` | Save plan file for review. |
 | `shiro clean --plan plan.json --execute` | Revalidate + prompt `yes` + remove approved targets. |
 | `shiro clean --plan plan.json --execute --yes` | Non-interactive (policy still enforced). |
+| `shiro duplicates PATH` | Report identical content (sha256, two-stage). Read-only, never deletes. |
+| `shiro duplicates PATH --min-size 10MiB --json` | Tune hashing scope; machine output. |
 | `shiro --version` / `--help` | Always available. |
 
 ## Flags (`scan`)
