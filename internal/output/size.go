@@ -1,6 +1,9 @@
 package output
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 func Human(b int64) string {
 	const u = 1024
@@ -40,8 +43,12 @@ func ParseSize(s string) (int64, error) {
 	if _, err := fmt.Sscanf(num, "%g", &f); err != nil {
 		return 0, fmt.Errorf("invalid size %q", s)
 	}
-	if f < 0 {
+	if f < 0 || math.IsNaN(f) || math.IsInf(f, 0) {
 		return 0, fmt.Errorf("invalid size %q", s)
 	}
-	return int64(f * float64(mult)), nil
+	v := f * float64(mult)
+	if v > float64(math.MaxInt64) {
+		return 0, fmt.Errorf("invalid size %q", s)
+	}
+	return int64(v), nil
 }

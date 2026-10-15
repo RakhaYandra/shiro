@@ -20,6 +20,10 @@ func LoadPlan(path string) (CleanupPlan, error) {
 	if err != nil {
 		return CleanupPlan{}, err
 	}
+	return decodePlan(raw)
+}
+
+func decodePlan(raw []byte) (CleanupPlan, error) {
 	var p CleanupPlan
 	dec := json.NewDecoder(bytes.NewReader(raw))
 	dec.DisallowUnknownFields()
