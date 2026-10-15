@@ -10,6 +10,9 @@
 | `shiro explain [PATH] --json` | Machine-readable explanation (`schema_version: 1`). |
 | `shiro clean PATH --dry-run` | Print-only cleanup plan. Never deletes. `--dry-run` required. |
 | `shiro clean PATH --dry-run --json` | Machine-readable plan (`schema_version: 1`). |
+| `shiro clean PATH --dry-run --json > plan.json` | Save plan file for review. |
+| `shiro clean --plan plan.json --execute` | Revalidate + prompt `yes` + remove approved targets. |
+| `shiro clean --plan plan.json --execute --yes` | Non-interactive (policy still enforced). |
 | `shiro --version` / `--help` | Always available. |
 
 ## Flags (`scan`)
@@ -30,3 +33,5 @@
 | 1 | General error |
 | 2 | Invalid CLI usage |
 | 3 | Partial scan (errors recorded in output, report incomplete) |
+| 4 | Cleanup denied by policy/validation (or nothing executable) |
+| 5 | Cleanup partially failed |

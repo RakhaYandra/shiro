@@ -40,6 +40,12 @@ func ExitCode(err error) int {
 	if errors.Is(err, ErrUsage) {
 		return 2
 	}
+	if errors.Is(err, ErrPolicyDenied) {
+		return 4
+	}
+	if errors.Is(err, ErrPartialFail) {
+		return 5
+	}
 	msg := err.Error()
 	for _, s := range []string{"unknown flag", "accepts ", "requires ", "invalid argument"} {
 		if strings.Contains(msg, s) {

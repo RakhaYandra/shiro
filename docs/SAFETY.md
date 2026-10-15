@@ -25,9 +25,20 @@ subtrees are denied with reasons.
 
 ## Two-phase rule
 
-Plan (print-only, with live size+mtime snapshot per item) → review →
-execution (M5, not implemented). `--yes` will never bypass denials.
-`clean` without `--dry-run` is refused.
+Plan (print-only, with live size+mtime snapshot per item) → save as file →
+review → `clean --plan FILE --execute`. `--yes` never bypasses denials or
+stale skips. `clean` without `--dry-run` (and `--plan` without `--execute`)
+is refused. Non-terminal stdin without `--yes` is refused.
+
+## Executor guarantees (M5)
+
+- Revalidates every item: policy recheck, no-follow Lstat, exact size+mtime
+  match. Changed, missing, symlinked, protected, or out-of-root targets are
+  skipped/denied, never removed.
+- Removal via `os.RemoveAll` directly (no shell). Post-removal Lstat must
+  show the target gone, else the item is reported `unknown`/`failed`.
+- Audit per item: success / skipped / denied / failed with reasons and
+  verified reclaimed bytes. Partial failure continues and reports exit 5.
 
 ## Proven by tests
 
