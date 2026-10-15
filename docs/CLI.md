@@ -8,6 +8,8 @@
 | `shiro scan PATH --json` | Stable JSON (`schema_version: 1`). |
 | `shiro explain [PATH]` | Categories + top dirs/files + reclaimable estimate. Read-only, no store. |
 | `shiro explain [PATH] --json` | Machine-readable explanation (`schema_version: 1`). |
+| `shiro clean PATH --dry-run` | Print-only cleanup plan. Never deletes. `--dry-run` required. |
+| `shiro clean PATH --dry-run --json` | Machine-readable plan (`schema_version: 1`). |
 | `shiro --version` / `--help` | Always available. |
 
 ## Flags (`scan`)

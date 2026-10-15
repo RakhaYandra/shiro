@@ -16,6 +16,7 @@ func NewRootCmd() *cobra.Command {
 	}
 	root.AddCommand(NewScanCmd())
 	root.AddCommand(NewExplainCmd())
+	root.AddCommand(NewCleanCmd())
 	return root
 }
 
