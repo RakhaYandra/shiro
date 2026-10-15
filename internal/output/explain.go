@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/RakhaYandra/shiro/internal/analysis"
+	"github.com/RakhaYandra/shiro/internal/detector"
 	"github.com/RakhaYandra/shiro/internal/scanner"
 )
 
@@ -35,6 +36,15 @@ func RenderExplainText(s scanner.Summary, _ string) string {
 	for _, f := range s.TopFiles {
 		fmt.Fprintf(&b, "  %8s  %s\n", Human(f.ApparentBytes), f.Path)
 	}
+	b.WriteString("\nDeveloper artifacts\n")
+	findings := detector.DefaultRegistry().Detect(s)
+	if len(findings) == 0 {
+		b.WriteString("  (none detected)\n")
+	}
+	for _, f := range findings {
+		fmt.Fprintf(&b, "  %8s  %-12s  [%s/%s] %s\n  %s\n",
+			Human(f.Bytes), f.Category, f.RuleID, f.Confidence, f.Path, "  "+f.Reason)
+	}
 	r := analysis.Reclaimable(s)
 	b.WriteString("\nReclaimable estimate\n")
 	if r.Known {
@@ -59,6 +69,15 @@ func RenderExplainJSON(s scanner.Summary, r analysis.Estimate, scannerVersion st
 		Path  string `json:"path"`
 		Bytes int64  `json:"bytes"`
 	}
+	type finding struct {
+		RuleID     string `json:"rule_id"`
+		Path       string `json:"path"`
+		Bytes      int64  `json:"bytes"`
+		Category   string `json:"category"`
+		Risk       string `json:"risk"`
+		Confidence string `json:"confidence"`
+		Reason     string `json:"reason"`
+	}
 	doc := map[string]any{
 		"schema_version":       1,
 		"scanner_version":      scannerVersion,
@@ -71,6 +90,7 @@ func RenderExplainJSON(s scanner.Summary, r analysis.Estimate, scannerVersion st
 		"top_dirs":             []item{},
 		"top_files":            []item{},
 		"categories":           []cat{},
+		"findings":             []finding{},
 		"reclaimable": map[string]any{
 			"bytes":  r.Bytes,
 			"known":  r.Known,
@@ -91,6 +111,10 @@ func RenderExplainJSON(s scanner.Summary, r analysis.Estimate, scannerVersion st
 	for _, c := range analysis.Categorize(s) {
 		doc["categories"] = append(doc["categories"].([]cat),
 			cat{c.Category, c.Bytes, c.Files, c.RuleID, c.Reason})
+	}
+	for _, f := range detector.DefaultRegistry().Detect(s) {
+		doc["findings"] = append(doc["findings"].([]finding),
+			finding{f.RuleID, f.Path, f.Bytes, f.Category, f.Risk, f.Confidence, f.Reason})
 	}
 	raw, _ := json.MarshalIndent(doc, "", "  ")
 	return append(raw, '\n')

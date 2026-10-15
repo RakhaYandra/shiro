@@ -52,3 +52,28 @@ func TestRenderExplainJSON_Schema(t *testing.T) {
 		t.Fatal("category missing rule_id")
 	}
 }
+
+func TestRenderExplain_Findings(t *testing.T) {
+	s := explainSummary()
+	s.Tree.Children = append(s.Tree.Children,
+		&scanner.DirNode{Path: "/x/node_modules", Apparent: 400})
+	out := RenderExplainText(s, "dev")
+	if !strings.Contains(out, "node_modules") || !strings.Contains(out, "DET-003") {
+		t.Fatalf("missing findings section:\n%s", out)
+	}
+	raw := RenderExplainJSON(s, analysis.Reclaimable(s), "dev")
+	var v map[string]any
+	if err := json.Unmarshal(raw, &v); err != nil {
+		t.Fatal(err)
+	}
+	fs, ok := v["findings"].([]any)
+	if !ok || len(fs) == 0 {
+		t.Fatalf("missing findings in JSON: %s", raw)
+	}
+	f0 := fs[0].(map[string]any)
+	for _, k := range []string{"rule_id", "reason", "risk", "confidence"} {
+		if _, ok := f0[k]; !ok {
+			t.Fatalf("finding missing %q", k)
+		}
+	}
+}
