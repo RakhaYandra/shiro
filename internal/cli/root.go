@@ -19,6 +19,7 @@ func NewRootCmd() *cobra.Command {
 	root.AddCommand(NewDuplicatesCmd())
 	root.AddCommand(NewHistoryCmd())
 	root.AddCommand(NewDiffCmd())
+	root.AddCommand(NewDockerCmd())
 	return root
 }
 

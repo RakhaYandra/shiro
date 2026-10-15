@@ -46,3 +46,5 @@ is refused. Non-terminal stdin without `--yes` is refused.
   symlink-into-`~/.ssh` denied.
 - `internal/policy`: strict subtree, root-itself, traversal, out-of-root.
 - No `Remove/Chmod/Chown/Rename/exec` exists in the scan/plan path.
+- Docker client exposes GET only (`internal/docker` has no POST/DELETE
+  path); volumes in use are `high` risk and the report never prunes.
